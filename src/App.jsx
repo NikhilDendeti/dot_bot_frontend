@@ -3,6 +3,7 @@ import SplashScreen from './Components/splashscreen'
 import LoginScreen from './Components/loginscreen'
 import SignupScreen from './Components/signupscreen'
 import HomeScreen from './Components/Homepage'
+import ChatScreen from './Components/Chatscreen'
 
 function App() {
   return (
@@ -10,7 +11,8 @@ function App() {
     {/* <SplashScreen /> */}
     {/* <LoginScreen /> */}
     {/* <SignupScreen /> */}
-    <HomeScreen />
+    {/* <HomeScreen /> */}
+    <ChatScreen />
     </>
     
   )

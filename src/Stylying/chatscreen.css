@@ -1,0 +1,235 @@
+
+.chat-container {
+    min-height: 100vh;
+    background-color: #1a1a1a;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  
+  .chat-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    border-bottom: 1px solid #2e2e2e;
+  }
+  
+  .icon-button {
+    color: white;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: background 0.3s;
+  }
+  
+  .icon-button:hover {
+    background-color: #2e2e2e;
+  }
+  
+  .icon {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .chat-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  
+  .logo-icon {
+    width: 126px;
+    height: 63px;
+  }
+  
+  
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    padding-bottom: 6rem;
+  }
+  
+  .message-wrapper {
+    display: flex;
+    margin-bottom: 1rem;
+  }
+  
+  .message-wrapper.bot {
+    justify-content: flex-start;
+  }
+  
+  .message-wrapper.user {
+    justify-content: flex-end;
+  }
+  
+  .message {
+    max-width: 90%;
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    color: white;
+  }
+  
+  .bot-message {
+    background-color: #dc2626;
+  }
+  
+  .user-message {
+    background-color: #3f3f46;
+  }
+  
+  .message-image img {
+    margin-top: 0.5rem;
+    width: 100%;
+    border-radius: 0.5rem;
+  }
+  
+  .message-link {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    opacity: 0.75;
+  }
+  
+  .link-text {
+    color: #fb923c;
+  }
+  
+  .chat-input-area {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    border-top: 1px solid #2e2e2e;
+    background-color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .chat-input-wrapper {
+    flex: 1;
+    position: relative;
+  }
+  
+  .chat-input-wrapper input {
+    width: 100%;
+    background-color: #2e2e2e;
+    color: white;
+    padding: 0.75rem 1rem;
+    padding-right: 2.5rem;
+    border-radius: 9999px;
+    border: 1px solid #3f3f46;
+    font-size: 0.875rem;
+  }
+  
+  .chat-input-wrapper input:focus {
+    border-color: #dc2626;
+    outline: none;
+  }
+  
+  .mic-button {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+  }
+  
+  .mic-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .send-button {
+    background: linear-gradient(to right, #ef4444, #f97316);
+    padding: 0.75rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s;
+  }
+  
+  .send-button:hover {
+    opacity: 0.9;
+  }
+  
+  .send-icon {
+    width: 20px;
+    height: 20px;
+    color: white;
+  }
+  
+  /* Chat History Panel */
+  
+  .chat-history-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    z-index: 50;
+  }
+  
+  .chat-history-panel {
+    width: 20rem;
+    background-color: #000000;
+    height: 100%;
+    padding: 1rem;
+    animation: slide-in 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  @keyframes slide-in {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+  
+  .chat-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  
+  .close-button {
+    color: #9ca3af;
+  }
+  
+  .new-chat-button {
+    width: 100%;
+    background-color: red;
+    color: white;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+  }
+  
+  .chat-history-body {
+    padding-top: 1rem;
+  }
+  
+  .chat-history-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+  
+  .see-more-button {
+    font-size: 0.875rem;
+    color: #9ca3af;
+  }
+  
+  .chat-history-backdrop {
+    flex: 1;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  
