@@ -144,7 +144,6 @@
 
 @media (min-width: 768px) {
     .home-container {
-      max-width: 600px;
-      margin: auto;
+      max-width: 400px;
     }
   }

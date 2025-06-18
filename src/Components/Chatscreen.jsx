@@ -1,8 +1,6 @@
 import '../Stylying/chatscreen.css'
-// ChatScreen.jsx
 import React, { useState } from 'react';
 import { Menu, MoreVertical, Send, Mic } from 'lucide-react';
-// import ChatHistory from './ChatHistory';
 
 const ChatScreen = ({ onSettings }) => {
   const [showHistory, setShowHistory] = useState(false);

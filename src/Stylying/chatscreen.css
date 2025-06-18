@@ -162,7 +162,6 @@
     color: white;
   }
   
-  /* Chat History Panel */
   
   .chat-history-overlay {
     position: fixed;
@@ -233,3 +232,10 @@
     background-color: rgba(0, 0, 0, 0.5);
   }
   
+
+  @media (min-width: 768px) {
+    .chat-container{
+      max-width: 600px;
+      margin: auto;
+    }
+  }

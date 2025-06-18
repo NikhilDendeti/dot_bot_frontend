@@ -8,10 +8,10 @@ import ChatScreen from './Components/Chatscreen'
 function App() {
   return (
     <>
-    {/* <SplashScreen /> */}
-    {/* <LoginScreen /> */}
-    {/* <SignupScreen /> */}
-    {/* <HomeScreen /> */}
+    <SplashScreen />
+    <LoginScreen />
+    <SignupScreen />
+    <HomeScreen />
     <ChatScreen />
     </>
     
