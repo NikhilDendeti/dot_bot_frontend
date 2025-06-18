@@ -1,11 +1,26 @@
 import '../Stylying/loginscreen.css'
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const LoginScreen = ({ onLogin, onSignUp, onForgotPassword }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const navigate=useNavigate();
+
+  const HandleLogin=()=>{
+    navigate("/home");
+  }
+
+  const HandleSignup=() =>{
+    navigate("/signup");
+  }
+
+  const HandleForgotPassword=()=>{
+    navigate("/forgotpassword");
+  }
 
   return (
     <div className="login-container">
@@ -18,7 +33,6 @@ const LoginScreen = ({ onLogin, onSignUp, onForgotPassword }) => {
         </div>
 
         <div className="login-box">
-          {/* Social buttons */}
           <div className="social-buttons">
             <button className="social-button">
               <img src="/assets/Vector (2).png" alt="Google" className="icon-img" />
@@ -67,14 +81,14 @@ const LoginScreen = ({ onLogin, onSignUp, onForgotPassword }) => {
           </div>
 
           <div className="forgot-password">
-            <button onClick={onForgotPassword}>Forgot Password?</button>
+            <button onClick={HandleForgotPassword}>Forgot Password?</button>
           </div>
 
-          <button className="login-button" onClick={onLogin}>Login</button>
+          <button className="login-button" onClick={HandleLogin}>Login</button>
 
           <div className="signup-link">
             <span>Don't Have Account? </span>
-            <button onClick={onSignUp}>Sign Up</button>
+            <button onClick={HandleSignup}>Sign Up</button>
           </div>
         </div>
       </div>
