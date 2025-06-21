@@ -1,26 +1,69 @@
-import '../Stylying/loginscreen.css'
+import '../Stylying/loginscreen.css';
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const LoginScreen = ({ onLogin, onSignUp, onForgotPassword }) => {
+const LoginScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const navigate = useNavigate();
 
-  const navigate=useNavigate();
+  const validateInputs = () => {
+    let isValid = true;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  const HandleLogin=()=>{
-    navigate("/home");
-  }
+    if (!email || !emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address.');
+      isValid = false;
+    } else {
+      setEmailError('');
+    }
 
-  const HandleSignup=() =>{
-    navigate("/signup");
-  }
+    if (!password || password.length < 6) {
+      setPasswordError('Password must be at least 6 characters.');
+      isValid = false;
+    } else {
+      setPasswordError('');
+    }
 
-  const HandleForgotPassword=()=>{
-    navigate("/forgotpassword");
-  }
+    return isValid;
+  };
+
+  const handleLogin = async () => {
+    if (!validateInputs()) return;
+
+    try {
+      const idToken = "<FIREBASE_ID_TOKEN>"; // Replace with actual Firebase Auth token
+
+      const res = await fetch('https://api-azjv7cvnxq-uc.a.run.app/auth/social-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem('authToken', idToken);
+        navigate('/home');
+      } else {
+        alert(data.message || 'Login failed');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      alert('Something went wrong. Please try again.');
+    }
+  };
+
+  const handleSignup = () => {
+    navigate('/signup');
+  };
+
+  const handleForgotPassword = () => {
+    navigate('/forgotpassword');
+  };
 
   return (
     <div className="login-container">
@@ -41,7 +84,7 @@ const LoginScreen = ({ onLogin, onSignUp, onForgotPassword }) => {
               <img src="/assets/Vector (1).png" alt="Facebook" className="icon-img" />
             </button>
             <button className="social-button">
-                <img src="/assets/Vector.png" alt="Apple" className="icon-img" />
+              <img src="/assets/Vector.png" alt="Apple" className="icon-img" />
             </button>
           </div>
 
@@ -61,6 +104,7 @@ const LoginScreen = ({ onLogin, onSignUp, onForgotPassword }) => {
               className="input-field"
             />
           </div>
+          {emailError && <p style={{ color: 'red', fontSize: '14px', marginTop: '4px' }}>{emailError}</p>}
 
           <div className="input-wrapper">
             <Lock className="input-icon" />
@@ -79,16 +123,19 @@ const LoginScreen = ({ onLogin, onSignUp, onForgotPassword }) => {
               {showPassword ? <EyeOff className="eye-icon" /> : <Eye className="eye-icon" />}
             </button>
           </div>
+          {passwordError && <p style={{ color: 'red', fontSize: '14px', marginTop: '4px' }}>{passwordError}</p>}
 
           <div className="forgot-password">
-            <button onClick={HandleForgotPassword}>Forgot Password?</button>
+            <button onClick={handleForgotPassword}>Forgot Password?</button>
           </div>
 
-          <button className="login-button" onClick={HandleLogin}>Login</button>
+          <button className="login-button" onClick={handleLogin}>
+            Login
+          </button>
 
           <div className="signup-link">
             <span>Don't Have Account? </span>
-            <button onClick={HandleSignup}>Sign Up</button>
+            <button onClick={handleSignup}>Sign Up</button>
           </div>
         </div>
       </div>

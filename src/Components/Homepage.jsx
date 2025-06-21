@@ -1,10 +1,46 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { MessageSquare, Trash2 } from 'lucide-react';
-import '../Stylying/homepage.css'
+import { useNavigate } from 'react-router-dom';
+import '../Stylying/homepage.css';
 
-const HomeScreen = ({ chats, onChatSelect, onChatDelete, onCreateNewChat }) => {
-    const groupChatsByDate = (chats = []) => {
-        const today = new Date();
+const HomeScreen = ({ onChatSelect, onChatDelete }) => {
+  const [chats, setChats] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchChatHistory = async () => {
+      try {
+        // ✅ Replace with real API when backend is ready
+        // const res = await fetch('https://api-azjv7cvnxq-uc.a.run.app/get-chat-history', {
+        //   method: 'GET',
+        //   headers: {
+        //     'Content-Type': 'application/json'
+        //   }
+        // });
+        // const data = await res.json();
+        // if (res.ok) {
+        //   setChats(data.chats || []);
+        // } else {
+        //   alert(data.message || 'Failed to fetch chat history');
+        // }
+
+        // ✅ Dummy Data for now
+        setChats([
+          { id: '1', title: 'What is GDOT?', timestamp: new Date().toISOString() },
+          { id: '2', title: 'Bridge standard D-47', timestamp: new Date(Date.now() - 86400000).toISOString() },
+          { id: '3', title: 'Pavement design tips', timestamp: new Date(Date.now() - 3 * 86400000).toISOString() },
+        ]);
+      } catch (err) {
+        console.error('Error fetching chats:', err);
+        alert('Something went wrong while fetching chat history');
+      }
+    };
+
+    fetchChatHistory();
+  }, []);
+
+  const groupChatsByDate = (chats = []) => {
+    const today = new Date();
     const sevenDaysAgo = new Date(today);
     sevenDaysAgo.setDate(today.getDate() - 7);
     const thirtyDaysAgo = new Date(today);
@@ -32,6 +68,10 @@ const HomeScreen = ({ chats, onChatSelect, onChatDelete, onCreateNewChat }) => {
 
   const groupedChats = groupChatsByDate(chats);
 
+  const handleCreateNewChat = () => {
+    navigate('/create-chat');
+  };
+
   return (
     <div className="home-container">
       <div className="top-bar">
@@ -42,7 +82,7 @@ const HomeScreen = ({ chats, onChatSelect, onChatDelete, onCreateNewChat }) => {
 
       <div className="main-content">
         <h2 className="section-title">New Chats</h2>
-        <button className="create-button" onClick={onCreateNewChat}>
+        <button className="create-button" onClick={handleCreateNewChat}>
           Create New Chats
         </button>
 
