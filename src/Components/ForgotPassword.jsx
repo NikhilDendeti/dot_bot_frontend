@@ -1,12 +1,40 @@
 import '../Stylying/loginscreen.css';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import LoadingOverlay from './LoadingOverlay';
 
 const ForgotPasswordScreen = () => {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('authToken');
+      if (!token) return;
+
+      try {
+        const res = await fetch('https://api-azjv7cvnxq-uc.a.run.app/get-chat-history', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem('authToken');
+          navigate('/login');
+        }
+      } catch (err) {
+        console.error('Auth check failed:', err);
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   const validateEmail = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -21,6 +49,7 @@ const ForgotPasswordScreen = () => {
   const handleResetPassword = async () => {
     if (!validateEmail()) return;
 
+    setLoading(true);
     try {
       const res = await fetch('https://api-azjv7cvnxq-uc.a.run.app/auth/reset-password', {
         method: 'POST',
@@ -39,11 +68,15 @@ const ForgotPasswordScreen = () => {
     } catch (err) {
       console.error('Reset error:', err);
       alert('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="login-container">
+      {loading && <LoadingOverlay />}
+
       <div className="login-card">
         <div className="login-header">
           <div className="logo-row">
@@ -64,7 +97,7 @@ const ForgotPasswordScreen = () => {
             />
           </div>
           {emailError && (
-            <p style={{ color: 'red', fontSize: '14px', marginTop: '4px' }}>{emailError}</p>
+            <p className="error-text">{emailError}</p>
           )}
 
           <button className="login-button" onClick={handleResetPassword}>

@@ -1,6 +1,8 @@
 import '../Stylying/chatscreen.css';
 import React, { useState } from 'react';
 import { Menu, MoreVertical, Send, Mic } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import LoadingOverlay from './LoadingOverlay.jsx';
 
 const ChatScreen = ({ onSettings }) => {
   const [showHistory, setShowHistory] = useState(false);
@@ -13,10 +15,12 @@ const ChatScreen = ({ onSettings }) => {
     }
   ]);
   const [inputText, setInputText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSendMessage = async () => {
     const prompt = inputText.trim();
-    if (!prompt) return;
+    if (!prompt || loading) return;
 
     const userMessage = {
       id: Date.now().toString(),
@@ -27,13 +31,29 @@ const ChatScreen = ({ onSettings }) => {
 
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
+    setLoading(true);
 
     try {
+      const idToken = localStorage.getItem('authToken');
+      if (!idToken) {
+        navigate('/login');
+        return;
+      }
+
       const res = await fetch('https://api-azjv7cvnxq-uc.a.run.app/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`
+        },
         body: JSON.stringify({ prompt })
       });
+
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem('authToken');
+        navigate('/login');
+        return;
+      }
 
       const data = await res.json();
       const botResponse = data.response || 'No response from DOTBot.';
@@ -49,18 +69,29 @@ const ChatScreen = ({ onSettings }) => {
 
       await fetch('https://api-azjv7cvnxq-uc.a.run.app/save-chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`
+        },
         body: JSON.stringify({ prompt, response: botResponse })
       });
 
     } catch (err) {
       console.error('Chat error:', err);
       alert('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleCreateNewChat = () => {
+    navigate('/create-new-chat');
   };
 
   return (
     <div className="chat-container">
+      {loading && <LoadingOverlay />}
+
       <div className="chat-topbar">
         <button onClick={() => setShowHistory(true)} className="icon-button">
           <Menu className="icon" />
@@ -99,12 +130,13 @@ const ChatScreen = ({ onSettings }) => {
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+            disabled={loading}
           />
-          <button className="mic-button">
+          <button className="mic-button" disabled={loading}>
             <Mic className="mic-icon" />
           </button>
         </div>
-        <button onClick={handleSendMessage} className="send-button">
+        <button onClick={handleSendMessage} className="send-button" disabled={loading}>
           <Send className="send-icon" />
         </button>
       </div>
@@ -117,7 +149,9 @@ const ChatScreen = ({ onSettings }) => {
               <button onClick={() => setShowHistory(false)} className="close-button">✕</button>
             </div>
 
-            <button className="new-chat-button">Create New Chats</button>
+            <button className="new-chat-button" onClick={handleCreateNewChat}>
+              Create New Chats
+            </button>
 
             <div className="chat-history-body">
               <div className="chat-history-title">

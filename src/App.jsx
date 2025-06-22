@@ -54,7 +54,7 @@ function App() {
           }
         />
         <Route
-          path="/create-chat"
+          path="/create-new-chat"
           element={
             <ProtectedRoute>
               <CreateNewChatScreen />

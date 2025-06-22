@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import '../Stylying/createnewchatsession.css';
+import LoadingOverlay from './LoadingOverlay';
 import { Mic, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const CreateNewChatScreen = ({ onCreateNewChat }) => {
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleStartChat = async () => {
@@ -14,10 +16,11 @@ const CreateNewChatScreen = ({ onCreateNewChat }) => {
     try {
       const idToken = localStorage.getItem('authToken');
       if (!idToken) {
-        alert('User not authenticated.');
         navigate('/login');
         return;
       }
+
+      setLoading(true);
 
       const res = await fetch('https://api-azjv7cvnxq-uc.a.run.app/chat', {
         method: 'POST',
@@ -27,6 +30,12 @@ const CreateNewChatScreen = ({ onCreateNewChat }) => {
         },
         body: JSON.stringify({ prompt }),
       });
+
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem('authToken');
+        navigate('/login');
+        return;
+      }
 
       const data = await res.json();
 
@@ -48,13 +57,16 @@ const CreateNewChatScreen = ({ onCreateNewChat }) => {
     } catch (err) {
       console.error('Create chat error:', err);
       alert('Something went wrong while creating a chat');
+    } finally {
+      setLoading(false);
+      setMessage('');
     }
-
-    setMessage('');
   };
 
   return (
     <div className="cns-container">
+      {loading && <LoadingOverlay />}
+      
       <div className="cns-header">
         <img src="/assets/Vector (3).png" alt="Menu" className="cns-icon" />
         <img src="/assets/ChatPage_image.png" alt="Logo" className="cns-logo" />

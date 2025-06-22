@@ -12,6 +12,7 @@ import {
   FacebookAuthProvider
 } from 'firebase/auth';
 import { firebaseConfig } from '../auth/firebase';
+import LoadingOverlay from './LoadingOverlay';
 
 initializeApp(firebaseConfig);
 
@@ -20,6 +21,7 @@ const SignupScreen = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const [nameError, setNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -60,11 +62,11 @@ const SignupScreen = () => {
 
   const handleSignup = async () => {
     if (!validateInputs()) return;
+    setLoading(true);
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
       await updateProfile(user, { displayName: name });
 
       const idToken = await user.getIdToken();
@@ -74,6 +76,12 @@ const SignupScreen = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken }),
       });
+
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem('authToken');
+        navigate('/login');
+        return;
+      }
 
       const data = await res.json();
 
@@ -86,10 +94,13 @@ const SignupScreen = () => {
     } catch (error) {
       console.error('Signup error:', error);
       alert(error.message || 'Signup failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSocialSignup = async (providerType) => {
+    setLoading(true);
     try {
       const provider = providerType === 'google' ? new GoogleAuthProvider() : new FacebookAuthProvider();
       const result = await signInWithPopup(auth, provider);
@@ -101,6 +112,12 @@ const SignupScreen = () => {
         body: JSON.stringify({ idToken }),
       });
 
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem('authToken');
+        navigate('/login');
+        return;
+      }
+
       if (res.ok) {
         localStorage.setItem('authToken', idToken);
         navigate('/home');
@@ -108,12 +125,16 @@ const SignupScreen = () => {
         alert(`${providerType} Signup failed`);
       }
     } catch (error) {
+      console.error(`${providerType} Signup failed`, error);
       alert(`${providerType} Signup failed`);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="login-container">
+      {loading && <LoadingOverlay />}
       <div className="login-card">
         <div className="login-header">
           <div className="logo-row">

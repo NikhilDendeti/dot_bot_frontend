@@ -1,151 +1,141 @@
-import '../Stylying/chatscreen.css';
-import React, { useState } from 'react';
-import { Menu, MoreVertical, Send, Mic } from 'lucide-react';
+import '../Stylying/homepage.css';
+import React, { useEffect, useState } from 'react';
+import { Menu, MoreVertical, MessageSquare, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import LoadingOverlay from './LoadingOverlay.jsx';
 
-const ChatScreen = ({ onSettings }) => {
-  const [showHistory, setShowHistory] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      id: '1',
-      text: "Hi! I'm DOTBOT, your GDOT Assistant. Please choose a module and ask your question.",
-      isBot: true,
-      timestamp: new Date().toISOString()
-    }
-  ]);
-  const [inputText, setInputText] = useState('');
+const HomeScreen = ({ onChatSelect, onChatDelete }) => {
+  const [chats, setChats] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const handleSendMessage = async () => {
-    const prompt = inputText.trim();
-    if (!prompt) return;
+  useEffect(() => {
+    const fetchChatHistory = async () => {
+      try {
+        const idToken = localStorage.getItem('authToken');
+        if (!idToken) {
+          navigate('/login');
+          return;
+        }
 
-    const userMessage = {
-      id: Date.now().toString(),
-      text: prompt,
-      isBot: false,
-      timestamp: new Date().toISOString()
+        const res = await fetch('https://api-azjv7cvnxq-uc.a.run.app/get-chat-history', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${idToken}`
+          }
+        });
+
+        // ✅ Global token error handling
+        if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem('authToken');
+          navigate('/login');
+          return;
+        }
+
+        const data = await res.json();
+
+        if (res.ok) {
+          setChats(data.chats || []);
+        } else {
+          alert(data.message || 'Failed to fetch chat history');
+        }
+      } catch (err) {
+        console.error('Error fetching chats:', err);
+        alert('Something went wrong while fetching chat history');
+      } finally {
+        setLoading(false);
+      }
     };
 
-    setMessages(prev => [...prev, userMessage]);
-    setInputText('');
+    fetchChatHistory();
+  }, [navigate]);
 
-    try {
-      const idToken = localStorage.getItem('authToken');
-      if (!idToken) {
-        alert("Authentication required. Please log in.");
-        navigate('/login');
-        return;
+  const groupChatsByDate = (chatList = []) => {
+    const today = new Date();
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(today.getDate() - 7);
+
+    const groups = {
+      today: [],
+      last7Days: [],
+      older: []
+    };
+
+    chatList.forEach(chat => {
+      const chatDate = new Date(chat.timestamp);
+      if (chatDate.toDateString() === today.toDateString()) {
+        groups.today.push(chat);
+      } else if (chatDate >= sevenDaysAgo) {
+        groups.last7Days.push(chat);
+      } else {
+        groups.older.push(chat);
       }
+    });
 
-      const res = await fetch('https://api-azjv7cvnxq-uc.a.run.app/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${idToken}`
-        },
-        body: JSON.stringify({ prompt })
-      });
+    return groups;
+  };
 
-      const data = await res.json();
-      const botResponse = data.response || 'No response from DOTBot.';
+  const groupedChats = groupChatsByDate(chats);
 
-      const botMessage = {
-        id: Date.now().toString() + '-bot',
-        text: botResponse,
-        isBot: true,
-        timestamp: new Date().toISOString()
-      };
-
-      setMessages(prev => [...prev, botMessage]);
-
-      await fetch('https://api-azjv7cvnxq-uc.a.run.app/save-chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${idToken}`
-        },
-        body: JSON.stringify({ prompt, response: botResponse })
-      });
-
-    } catch (err) {
-      console.error('Chat error:', err);
-      alert('Something went wrong. Please try again.');
-    }
+  const handleCreateNewChat = () => {
+    navigate('/create-new-chat');
   };
 
   return (
-    <div className="chat-container">
-      <div className="chat-topbar">
-        <button onClick={() => setShowHistory(true)} className="icon-button">
+    <div className="home-container">
+      {loading && <LoadingOverlay />}
+
+      <div className="top-bar">
+        <button className="icon-button">
           <Menu className="icon" />
         </button>
         <div className="chat-logo">
-          <img src="/assets/ChatPage_image.png" alt="G Symbol" className="logo-icon" />
+          <img src="/assets/ChatPage_image.png" alt="DOTBOT Logo" className="dotbot-logo" />
         </div>
-        <button onClick={onSettings} className="icon-button">
+        <button className="icon-button">
           <MoreVertical className="icon" />
         </button>
       </div>
 
-      <div className="chat-messages">
-        {messages.map((msg) => (
-          <div key={msg.id} className={`message-wrapper ${msg.isBot ? 'bot' : 'user'}`}>
-            <div className={`message ${msg.isBot ? 'bot-message' : 'user-message'}`}>
-              <p>{msg.text}</p>
-              {msg.image && (
-                <div className="message-image">
-                  <img src={msg.image} alt="Preview" />
-                  <p className="message-link">
-                    Click Here: <span className="link-text">🔗 Link</span>
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="chat-input-area">
-        <div className="chat-input-wrapper">
-          <input
-            type="text"
-            placeholder="Write your question to AI chatbot here"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-          />
-          <button className="mic-button">
-            <Mic className="mic-icon" />
-          </button>
-        </div>
-        <button onClick={handleSendMessage} className="send-button">
-          <Send className="send-icon" />
+      <div className="main-content">
+        <h2 className="section-title">New Chats</h2>
+        <button className="create-button" onClick={handleCreateNewChat}>
+          Create New Chats
         </button>
-      </div>
 
-      {showHistory && (
-        <div className="chat-history-overlay">
-          <div className="chat-history-panel">
-            <div className="chat-history-header">
-              <h2>New Chats</h2>
-              <button onClick={() => setShowHistory(false)} className="close-button">✕</button>
-            </div>
-
-            <button className="new-chat-button">Create New Chats</button>
-
-            <div className="chat-history-body">
-              <div className="chat-history-title">
-                <h3>Chats History</h3>
-                <button className="see-more-button">See More</button>
-              </div>
-            </div>
+        <div className="chat-history-section">
+          <div className="history-header">
+            <h2 className="section-title">Chats History</h2>
+            <button className="see-more">See More</button>
           </div>
-          <div className="chat-history-backdrop" onClick={() => setShowHistory(false)}></div>
+
+          {Object.entries(groupedChats).map(([section, items]) =>
+            items.length > 0 ? (
+              <div className="chat-group" key={section}>
+                <h3 className="group-title">
+                  {section === 'today' ? 'Today' : section === 'last7Days' ? '7 Days' : '30 Days'}
+                </h3>
+                <ul className="chat-list">
+                  {items.map(chat => (
+                    <li key={chat.id} className="chat-item">
+                      <button className="chat-title" onClick={() => onChatSelect?.(chat)}>
+                        <MessageSquare className="chat-icon" />
+                        <span className="chat-text">{chat.title || 'Untitled Chat'}</span>
+                      </button>
+                      <button className="delete-btn" onClick={() => onChatDelete?.(chat)}>
+                        <Trash2 className="trash-icon" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
 
-export default ChatScreen;
+export default HomeScreen;
