@@ -2,18 +2,29 @@ import '../Stylying/loginscreen.css';
 import React, { useState } from 'react';
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { initializeApp } from 'firebase/app';
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  signInWithPopup,
+  GoogleAuthProvider,
+  FacebookAuthProvider
+} from 'firebase/auth';
+import { firebaseConfig } from '../auth/firebase';
+
+initializeApp(firebaseConfig);
 
 const SignupScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
   const [nameError, setNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-
   const navigate = useNavigate();
+  const auth = getAuth();
 
   const validateInputs = () => {
     let isValid = true;
@@ -51,26 +62,53 @@ const SignupScreen = () => {
     if (!validateInputs()) return;
 
     try {
-      const res = await fetch('https://api-azjv7cvnxq-uc.a.run.app/auth/signup', {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      await updateProfile(user, { displayName: name });
+
+      const idToken = await user.getIdToken();
+
+      const res = await fetch('https://api-azjv7cvnxq-uc.a.run.app/auth/social-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          password,
-          username: name,
-        }),
+        body: JSON.stringify({ idToken }),
       });
 
       const data = await res.json();
+
       if (res.ok) {
-        alert('Signup successful! Please login.');
-        navigate('/login');
+        localStorage.setItem('authToken', idToken);
+        navigate('/home');
       } else {
-        alert(data.message || 'Signup failed');
+        alert(data.message || 'Backend signup failed');
       }
-    } catch (err) {
-      console.error('Signup error:', err);
-      alert('Something went wrong. Please try again.');
+    } catch (error) {
+      console.error('Signup error:', error);
+      alert(error.message || 'Signup failed. Please try again.');
+    }
+  };
+
+  const handleSocialSignup = async (providerType) => {
+    try {
+      const provider = providerType === 'google' ? new GoogleAuthProvider() : new FacebookAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const idToken = await result.user.getIdToken();
+
+      const res = await fetch('https://api-azjv7cvnxq-uc.a.run.app/auth/social-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+
+      if (res.ok) {
+        localStorage.setItem('authToken', idToken);
+        navigate('/home');
+      } else {
+        alert(`${providerType} Signup failed`);
+      }
+    } catch (error) {
+      alert(`${providerType} Signup failed`);
     }
   };
 
@@ -86,13 +124,13 @@ const SignupScreen = () => {
 
         <div className="login-box">
           <div className="social-buttons">
-            <button className="social-button">
+            <button className="social-button" onClick={() => handleSocialSignup('google')}>
               <img src="/assets/Vector (2).png" alt="Google" className="icon-img" />
             </button>
-            <button className="social-button">
+            <button className="social-button" onClick={() => handleSocialSignup('facebook')}>
               <img src="/assets/Vector (1).png" alt="Facebook" className="icon-img" />
             </button>
-            <button className="social-button">
+            <button className="social-button" disabled>
               <img src="/assets/Vector.png" alt="Apple" className="icon-img" />
             </button>
           </div>
@@ -113,7 +151,7 @@ const SignupScreen = () => {
               className="input-field"
             />
           </div>
-          {nameError && <p style={{ color: 'red', fontSize: '14px', marginTop: '4px' }}>{nameError}</p>}
+          {nameError && <p className="error-text">{nameError}</p>}
 
           <div className="input-wrapper">
             <Mail className="input-icon" />
@@ -125,7 +163,7 @@ const SignupScreen = () => {
               className="input-field"
             />
           </div>
-          {emailError && <p style={{ color: 'red', fontSize: '14px', marginTop: '4px' }}>{emailError}</p>}
+          {emailError && <p className="error-text">{emailError}</p>}
 
           <div className="input-wrapper">
             <Lock className="input-icon" />
@@ -144,7 +182,7 @@ const SignupScreen = () => {
               {showPassword ? <Eye className="eye-icon" /> : <EyeOff className="eye-icon" />}
             </button>
           </div>
-          {passwordError && <p style={{ color: 'red', fontSize: '14px', marginTop: '4px' }}>{passwordError}</p>}
+          {passwordError && <p className="error-text">{passwordError}</p>}
 
           <button className="login-button" onClick={handleSignup}>
             Create Account

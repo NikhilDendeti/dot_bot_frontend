@@ -2,6 +2,11 @@ import '../Stylying/loginscreen.css';
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth';
+import { initializeApp } from 'firebase/app';
+import { firebaseConfig } from '../auth/firebase';
+
+initializeApp(firebaseConfig);
 
 const LoginScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -10,6 +15,7 @@ const LoginScreen = () => {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const navigate = useNavigate();
+  const auth = getAuth();
 
   const validateInputs = () => {
     let isValid = true;
@@ -36,7 +42,8 @@ const LoginScreen = () => {
     if (!validateInputs()) return;
 
     try {
-      const idToken = "<FIREBASE_ID_TOKEN>"; // Replace with actual Firebase Auth token
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const idToken = await userCredential.user.getIdToken();
 
       const res = await fetch('https://api-azjv7cvnxq-uc.a.run.app/auth/social-login', {
         method: 'POST',
@@ -52,17 +59,45 @@ const LoginScreen = () => {
         alert(data.message || 'Login failed');
       }
     } catch (err) {
-      console.error('Login error:', err);
-      alert('Something went wrong. Please try again.');
+      const errorCode = err.code;
+      if (errorCode === 'auth/user-not-found') {
+        setEmailError('No account found with this email.');
+      } else if (errorCode === 'auth/wrong-password') {
+        setPasswordError('Incorrect password.');
+      } else if (errorCode === 'auth/invalid-email') {
+        setEmailError('Invalid email address format.');
+      } else if (errorCode === 'auth/too-many-requests') {
+        alert('Too many login attempts. Please try again later.');
+      } else {
+        alert('Login failed. Please try again.');
+      }
     }
   };
 
-  const handleSignup = () => {
-    navigate('/signup');
-  };
+  const handleSocialLogin = async (providerType) => {
+    try {
+      const provider = providerType === 'google' ? new GoogleAuthProvider() : new FacebookAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const idToken = await result.user.getIdToken();
 
-  const handleForgotPassword = () => {
-    navigate('/forgotpassword');
+      const res = await fetch('https://api-azjv7cvnxq-uc.a.run.app/auth/social-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem('authToken', idToken);
+        navigate('/home');
+      } else {
+        alert(data.message || 'Social login failed');
+      }
+    } catch (error) {
+      if (error.code !== 'auth/popup-closed-by-user') {
+        alert('Social login failed. Please try again.');
+      }
+    }
   };
 
   return (
@@ -77,13 +112,13 @@ const LoginScreen = () => {
 
         <div className="login-box">
           <div className="social-buttons">
-            <button className="social-button">
+            <button className="social-button" onClick={() => handleSocialLogin('google')}>
               <img src="/assets/Vector (2).png" alt="Google" className="icon-img" />
             </button>
-            <button className="social-button">
+            <button className="social-button" onClick={() => handleSocialLogin('facebook')}>
               <img src="/assets/Vector (1).png" alt="Facebook" className="icon-img" />
             </button>
-            <button className="social-button">
+            <button className="social-button" disabled>
               <img src="/assets/Vector.png" alt="Apple" className="icon-img" />
             </button>
           </div>
@@ -96,46 +131,28 @@ const LoginScreen = () => {
 
           <div className="input-wrapper">
             <Mail className="input-icon" />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter Your Email"
-              className="input-field"
-            />
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter Your Email" className="input-field" />
           </div>
-          {emailError && <p style={{ color: 'red', fontSize: '14px', marginTop: '4px' }}>{emailError}</p>}
+          {emailError && <p className="error-text">{emailError}</p>}
 
           <div className="input-wrapper">
             <Lock className="input-icon" />
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter Your Password"
-              className="input-field"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="eye-toggle"
-            >
+            <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter Your Password" className="input-field" />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} className="eye-toggle">
               {showPassword ? <EyeOff className="eye-icon" /> : <Eye className="eye-icon" />}
             </button>
           </div>
-          {passwordError && <p style={{ color: 'red', fontSize: '14px', marginTop: '4px' }}>{passwordError}</p>}
+          {passwordError && <p className="error-text">{passwordError}</p>}
 
           <div className="forgot-password">
-            <button onClick={handleForgotPassword}>Forgot Password?</button>
+            <button onClick={() => navigate('/forgotpassword')}>Forgot Password?</button>
           </div>
 
-          <button className="login-button" onClick={handleLogin}>
-            Login
-          </button>
+          <button className="login-button" onClick={handleLogin}>Login</button>
 
           <div className="signup-link">
             <span>Don't Have Account? </span>
-            <button onClick={handleSignup}>Sign Up</button>
+            <button onClick={() => navigate('/signup')}>Sign Up</button>
           </div>
         </div>
       </div>

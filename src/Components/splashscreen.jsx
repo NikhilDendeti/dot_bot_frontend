@@ -2,11 +2,11 @@ import "../Stylying/splashscreen.css";
 import { useNavigate } from "react-router-dom";
 
 const SplashScreen = () => {
-  const navigate=useNavigate();
+  const navigate = useNavigate();
 
-  const HandleGetStarted=()=>{
-    navigate("/login")
-  }
+  const handleGetStarted = () => {
+    navigate("/login");
+  };
 
   return (
     <div className="splash-screen">
@@ -14,24 +14,29 @@ const SplashScreen = () => {
 
       <div className="splash-content">
         <div className="top-bar">
-          <img src="/assets/Gsymbol.png" alt="Gsymbol" className="logo-icon" />
-          <img src="/assets/Dot_Bot_Name.png" alt="DotBot Title" className="dotbot-title" />
+          <img src="/assets/Gsymbol.png" alt="Georgia DOT Logo" className="logo-icon" />
+          <img src="/assets/Dot_Bot_Name.png" alt="DOTBot Title" className="dotbot-title" />
         </div>
 
-        <img src="/assets/Bot_Icon.png" alt="Bot Icon" className="bot-icon" />
+        <img src="/assets/Bot_Icon.png" alt="DOTBot Icon" className="bot-icon" />
 
         <div className="text-content">
-          <h3>Where Georgia builds,<br></br> DOTBot leads.</h3>
+          <h3>
+            Where Georgia builds, <br />
+            <span className="highlighted">DOTBot leads.</span>
+          </h3>
           <p>
             DOTBot is your intelligent assistant for navigating Georgia DOT specifications,
-            construction standards, and contractor resources. Built to support infrastructure
-            teams with instant access to the information that powers smarter, faster, and fully
+            construction standards, and contractor resources. Built to support infrastructure teams
+            with instant access to the information that powers smarter, faster, and fully
             compliant projects.
           </p>
         </div>
 
         <div className="btn-wrapper">
-          <button className="get-started" onClick={HandleGetStarted}>Get Started</button>
+          <button type="button" className="get-started" onClick={handleGetStarted}>
+            Get Started
+          </button>
         </div>
       </div>
     </div>

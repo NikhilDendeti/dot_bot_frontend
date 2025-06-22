@@ -31,10 +31,10 @@ const ForgotPasswordScreen = () => {
       const data = await res.json();
 
       if (res.ok) {
-        alert('Password reset email sent successfully!');
+        alert('Password reset link sent to your email.');
         navigate('/login');
       } else {
-        alert(data.message || 'Reset failed');
+        alert(data.message || 'Reset failed. Try again.');
       }
     } catch (err) {
       console.error('Reset error:', err);
@@ -63,7 +63,9 @@ const ForgotPasswordScreen = () => {
               className="input-field"
             />
           </div>
-          {emailError && <p style={{ color: 'red', fontSize: '14px', marginTop: '4px' }}>{emailError}</p>}
+          {emailError && (
+            <p style={{ color: 'red', fontSize: '14px', marginTop: '4px' }}>{emailError}</p>
+          )}
 
           <button className="login-button" onClick={handleResetPassword}>
             Send Reset Link

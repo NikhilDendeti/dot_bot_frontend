@@ -1,16 +1,54 @@
-
 import React, { useState } from 'react';
 import '../Stylying/createnewchatsession.css';
 import { Mic, Send } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const CreateNewChatScreen = ({ onCreateNewChat }) => {
   const [message, setMessage] = useState('');
+  const navigate = useNavigate();
 
-  const handleStartChat = () => {
-    if (!message.trim()) return;
+  const handleStartChat = async () => {
+    const prompt = message.trim();
+    if (!prompt) return;
 
-    console.log('Sending:', message);
-    if (onCreateNewChat) onCreateNewChat(message);
+    try {
+      const idToken = localStorage.getItem('authToken');
+      if (!idToken) {
+        alert('User not authenticated.');
+        navigate('/login');
+        return;
+      }
+
+      const res = await fetch('https://api-azjv7cvnxq-uc.a.run.app/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.response) {
+        await fetch('https://api-azjv7cvnxq-uc.a.run.app/save-chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({ prompt, response: data.response }),
+        });
+
+        if (onCreateNewChat) onCreateNewChat(prompt);
+        navigate('/chat');
+      } else {
+        alert(data.message || 'Failed to start chat');
+      }
+    } catch (err) {
+      console.error('Create chat error:', err);
+      alert('Something went wrong while creating a chat');
+    }
 
     setMessage('');
   };
