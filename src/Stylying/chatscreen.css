@@ -255,14 +255,11 @@
       max-width: 600px;
       margin: auto;
     }
-
-    .chat-input-area {
-      left: 0;
-      transform: none;
-      max-width: 600px;
-    }
   
-    
+    .chat-input-area {
+      max-width: 600px;
+      margin: 0 auto;
+    }
   }
 
 
