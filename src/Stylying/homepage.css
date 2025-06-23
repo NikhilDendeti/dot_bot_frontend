@@ -22,6 +22,7 @@
   width: 44px;
   height: 44px;
   cursor: pointer;
+  background-color: #7c7775;
 }
 
 .dotbot-logo {
@@ -56,7 +57,7 @@
   margin-bottom: 24px;
   transition: background 0.3s;
   align-items: center;
-  margin-left: 16px;
+  margin-left: 24px;
 }
 
 .create-button:hover {
@@ -103,6 +104,10 @@
   font-weight: 600;
   color: #ccc;
   margin-bottom: 8px;
+}
+
+.chat-list{
+  margin-left: -22px;
 }
 
 .chat-item {

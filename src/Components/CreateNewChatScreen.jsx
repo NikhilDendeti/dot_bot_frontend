@@ -95,7 +95,7 @@ const CreateNewChatScreen = ({ onCreateNewChat }) => {
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleStartChat()}
         />
-        <Mic className="cns-mic" />
+        {/* <Mic className="cns-mic" /> */}
         <Send className="cns-send" onClick={handleStartChat} />
       </div>
     </div>

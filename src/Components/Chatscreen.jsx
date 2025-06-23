@@ -1,5 +1,5 @@
 import '../Stylying/chatscreen.css';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Menu, MoreVertical, Send, Mic } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import LoadingOverlay from './LoadingOverlay.jsx';
@@ -17,6 +17,11 @@ const ChatScreen = ({ onSettings }) => {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const handleSendMessage = async () => {
     const prompt = inputText.trim();
@@ -120,6 +125,7 @@ const ChatScreen = ({ onSettings }) => {
             </div>
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="chat-input-area">
@@ -133,7 +139,7 @@ const ChatScreen = ({ onSettings }) => {
             disabled={loading}
           />
           <button className="mic-button" disabled={loading}>
-            <Mic className="mic-icon" />
+            {/* <Mic className="mic-icon" /> */}
           </button>
         </div>
         <button onClick={handleSendMessage} className="send-button" disabled={loading}>
@@ -148,11 +154,9 @@ const ChatScreen = ({ onSettings }) => {
               <h2>New Chats</h2>
               <button onClick={() => setShowHistory(false)} className="close-button">✕</button>
             </div>
-
             <button className="new-chat-button" onClick={handleCreateNewChat}>
               Create New Chats
             </button>
-
             <div className="chat-history-body">
               <div className="chat-history-title">
                 <h3>Chats History</h3>
@@ -168,3 +172,4 @@ const ChatScreen = ({ onSettings }) => {
 };
 
 export default ChatScreen;
+

@@ -139,7 +139,7 @@ const LoginScreen = () => {
             <Lock className="input-icon" />
             <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter Your Password" className="input-field" />
             <button type="button" onClick={() => setShowPassword(!showPassword)} className="eye-toggle">
-              {showPassword ? <EyeOff className="eye-icon" /> : <Eye className="eye-icon" />}
+              {showPassword ? <Eye className="eye-icon" /> : <EyeOff className="eye-icon" />}
             </button>
           </div>
           {passwordError && <p className="error-text">{passwordError}</p>}

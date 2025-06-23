@@ -26,7 +26,6 @@ const HomeScreen = ({ onChatSelect, onChatDelete }) => {
           }
         });
 
-        // ✅ Global token error handling
         if (res.status === 401 || res.status === 403) {
           localStorage.removeItem('authToken');
           navigate('/login');
