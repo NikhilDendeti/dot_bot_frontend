@@ -1,5 +1,5 @@
    .chat-container {
-    height: 100dvh;
+    height: 100vh;
     background-color: #1a1a1a;
     display: flex;
     flex-direction: column;
@@ -98,7 +98,7 @@
   }
   
   .chat-input-area {
-    position: sticky;
+    position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
