@@ -139,7 +139,6 @@ const ChatScreen = ({ onSettings }) => {
             disabled={loading}
           />
           <button className="mic-button" disabled={loading}>
-            {/* <Mic className="mic-icon" /> */}
           </button>
         </div>
         <button onClick={handleSendMessage} className="send-button" disabled={loading}>
