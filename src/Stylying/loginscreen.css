@@ -124,6 +124,11 @@ html, body, #root {
     width: 20px;
     height: 20px;
   }
+
+  .error-text {
+    color: red;
+    font-size: 0.75rem;
+  }
   
 .eye-toggle {
     position: absolute;
