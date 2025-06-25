@@ -38,7 +38,7 @@
     text-align: center;
     padding: 0 20px;
     overflow-y: auto;
-    padding-bottom: 100px; /* prevent overlap with fixed input */
+    padding-bottom: 100px;
   }
   
   .cns-character {
