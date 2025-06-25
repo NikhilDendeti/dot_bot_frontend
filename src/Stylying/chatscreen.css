@@ -42,6 +42,12 @@
     height: 63px;
   }
   
+  .typing-indicator p {
+    font-style: italic;
+    color: #e5e5e5;
+    opacity: 0.75;
+  }
+
   .chat-messages {
     flex: 1;
     overflow-y: auto;

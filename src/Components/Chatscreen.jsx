@@ -2,7 +2,6 @@ import '../Stylying/chatscreen.css';
 import React, { useState, useEffect, useRef } from 'react';
 import { Menu, MoreVertical, Send, Mic } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import LoadingOverlay from './LoadingOverlay.jsx';
 
 const ChatScreen = ({ onSettings }) => {
   const [showHistory, setShowHistory] = useState(false);
@@ -95,7 +94,6 @@ const ChatScreen = ({ onSettings }) => {
 
   return (
     <div className="chat-container">
-      {loading && <LoadingOverlay />}
 
       <div className="chat-topbar">
         <button onClick={() => setShowHistory(true)} className="icon-button">
@@ -125,6 +123,15 @@ const ChatScreen = ({ onSettings }) => {
             </div>
           </div>
         ))}
+
+        {loading && (
+          <div className="message-wrapper bot">
+            <div className="message bot-message typing-indicator">
+              <p><em>DOTBOT is typing...</em></p>
+            </div>
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 
@@ -171,4 +178,5 @@ const ChatScreen = ({ onSettings }) => {
 };
 
 export default ChatScreen;
+
 
