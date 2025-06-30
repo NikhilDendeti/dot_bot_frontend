@@ -1,17 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../Stylying/createnewchatsession.css';
 import LoadingOverlay from './LoadingOverlay';
-import { Mic, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const CreateNewChatScreen = ({ onCreateNewChat }) => {
-  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [chatTitle, setChatTitle] = useState('');
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const storedTitle = localStorage.getItem('newChatTitle');
+    if (storedTitle) {
+      setChatTitle(storedTitle);
+      localStorage.removeItem('newChatTitle');
+    } else {
+      setChatTitle('Untitled Chat');
+    }
+  }, []);
+
   const handleStartChat = async () => {
-    const prompt = message.trim();
-    if (!prompt) return;
+    const prompt = 'Start chat'; // ✅ default prompt
 
     try {
       const idToken = localStorage.getItem('authToken');
@@ -37,7 +45,15 @@ const CreateNewChatScreen = ({ onCreateNewChat }) => {
         return;
       }
 
-      const data = await res.json();
+      const text = await res.text();
+      let data = {};
+      try {
+        data = JSON.parse(text);
+      } catch (err) {
+        console.error("Parse Error:", err, text);
+        alert('Invalid server response');
+        return;
+      }
 
       if (res.ok && data.response) {
         await fetch('https://api-azjv7cvnxq-uc.a.run.app/save-chat', {
@@ -46,7 +62,11 @@ const CreateNewChatScreen = ({ onCreateNewChat }) => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${idToken}`,
           },
-          body: JSON.stringify({ prompt, response: data.response }),
+          body: JSON.stringify({
+            prompt,
+            response: data.response,
+            title: chatTitle || 'Untitled Chat',
+          }),
         });
 
         if (onCreateNewChat) onCreateNewChat(prompt);
@@ -59,14 +79,13 @@ const CreateNewChatScreen = ({ onCreateNewChat }) => {
       alert('Something went wrong while creating a chat');
     } finally {
       setLoading(false);
-      setMessage('');
     }
   };
 
   return (
     <div className="cns-container">
       {loading && <LoadingOverlay />}
-      
+
       <div className="cns-header">
         <img src="/assets/Vector (3).png" alt="Menu" className="cns-icon" />
         <img src="/assets/ChatPage_image.png" alt="Logo" className="cns-logo" />
@@ -83,19 +102,13 @@ const CreateNewChatScreen = ({ onCreateNewChat }) => {
         </h2>
         <p className="cns-subtext">
           Welcome to DOTBot. Instantly navigate Georgia DOT specs and standards.
-          Start chatting now.
         </p>
       </div>
 
-      <div className="cns-input-section">
-        <input
-          className="cns-input"
-          placeholder="Start Chat"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleStartChat()}
-        />
-        <Send className="cns-send" onClick={handleStartChat} />
+      <div className="cns-button-section">
+        <button className="get-started-btn" onClick={handleStartChat}>
+          Get Started
+        </button>
       </div>
     </div>
   );

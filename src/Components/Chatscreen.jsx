@@ -1,6 +1,6 @@
 import '../Stylying/chatscreen.css';
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, MoreVertical, Send, Mic } from 'lucide-react';
+import { Menu, MoreVertical, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const ChatScreen = ({ onSettings }) => {
@@ -21,6 +21,13 @@ const ChatScreen = ({ onSettings }) => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // ✅ Utility to detect image URLs
+  const extractImageUrl = (text) => {
+    const imageRegex = /(https?:\/\/[^\s]+?\.(?:png|jpg|jpeg|gif|webp))/i;
+    const match = text.match(imageRegex);
+    return match ? match[1] : null;
+  };
 
   const handleSendMessage = async () => {
     const prompt = inputText.trim();
@@ -59,14 +66,34 @@ const ChatScreen = ({ onSettings }) => {
         return;
       }
 
-      const data = await res.json();
-      const botResponse = data.response || 'No response from DOTBot.';
+      const text = await res.text();
+      let data = {};
+      try {
+        data = JSON.parse(text);
+      } catch (err) {
+        alert('Server error: Invalid response format');
+        return;
+      }
+
+      if (!data.response || typeof data.response !== 'string' || data.response.trim() === '') {
+        alert(data.message || 'DOTBot is currently unavailable. Please try again later.');
+        return;
+      }
+
+      const originalResponse = data.response;
+      const imageUrl = extractImageUrl(originalResponse);
+
+      // ✅ Remove image URL from the response text
+      const cleanedResponse = imageUrl
+        ? originalResponse.replace(imageUrl, '').trim()
+        : originalResponse;
 
       const botMessage = {
         id: Date.now().toString() + '-bot',
-        text: botResponse,
+        text: cleanedResponse,
         isBot: true,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        image: imageUrl
       };
 
       setMessages(prev => [...prev, botMessage]);
@@ -77,12 +104,12 @@ const ChatScreen = ({ onSettings }) => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${idToken}`
         },
-        body: JSON.stringify({ prompt, response: botResponse })
+        body: JSON.stringify({ prompt, response: originalResponse }) // ✅ Save full original response
       });
 
     } catch (err) {
-      console.error('Chat error:', err);
-      alert('Something went wrong. Please try again.');
+      console.error('❌ Chat request failed:', err);
+      alert('Something went wrong while processing your chat.');
     } finally {
       setLoading(false);
     }
@@ -94,7 +121,6 @@ const ChatScreen = ({ onSettings }) => {
 
   return (
     <div className="chat-container">
-
       <div className="chat-topbar">
         <button onClick={() => setShowHistory(true)} className="icon-button">
           <Menu className="icon" />
@@ -112,11 +138,13 @@ const ChatScreen = ({ onSettings }) => {
           <div key={msg.id} className={`message-wrapper ${msg.isBot ? 'bot' : 'user'}`}>
             <div className={`message ${msg.isBot ? 'bot-message' : 'user-message'}`}>
               <p>{msg.text}</p>
+
+              {/* ✅ SHOW IMAGE IF PRESENT */}
               {msg.image && (
                 <div className="message-image">
-                  <img src={msg.image} alt="Preview" />
+                  <img src={msg.image} alt="Preview" className="preview-image" />
                   <p className="message-link">
-                    Click Here: <span className="link-text">🔗 Link</span>
+                    🔗 <a href={msg.image} target="_blank" rel="noopener noreferrer" className="link-text">View Full Image</a>
                   </p>
                 </div>
               )}
@@ -146,6 +174,7 @@ const ChatScreen = ({ onSettings }) => {
             disabled={loading}
           />
           <button className="mic-button" disabled={loading}>
+            {/* Mic icon (optional) */}
           </button>
         </div>
         <button onClick={handleSendMessage} className="send-button" disabled={loading}>
@@ -178,5 +207,3 @@ const ChatScreen = ({ onSettings }) => {
 };
 
 export default ChatScreen;
-
-

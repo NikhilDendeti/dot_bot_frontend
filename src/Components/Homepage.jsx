@@ -78,6 +78,17 @@ const HomeScreen = ({ onChatSelect, onChatDelete }) => {
   const groupedChats = groupChatsByDate(chats);
 
   const handleCreateNewChat = () => {
+    const today = new Date().toDateString();
+
+    const todayChats = chats.filter(chat =>
+      new Date(chat.timestamp).toDateString() === today
+    );
+
+    const newChatNumber = todayChats.length + 1;
+    const newChatTitle = `Chat ${newChatNumber}`;
+
+    localStorage.setItem('newChatTitle', newChatTitle);
+
     navigate('/create-new-chat');
   };
 
@@ -138,3 +149,4 @@ const HomeScreen = ({ onChatSelect, onChatDelete }) => {
 };
 
 export default HomeScreen;
+

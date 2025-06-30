@@ -57,7 +57,8 @@
   margin-bottom: 24px;
   transition: background 0.3s;
   align-items: center;
-  margin-left: 24px;
+  margin-left: 52px;
+  align-items: center;
 }
 
 .create-button:hover {
